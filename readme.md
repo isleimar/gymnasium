@@ -13,3 +13,8 @@ pip install gymnasium[box2d]
 
 ```
 
+### Instalação OpenCV
+```
+pip install opencv-python
+```
+
