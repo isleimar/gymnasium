@@ -28,7 +28,7 @@ def run():
 
     action = env.action_space.sample()
     action[0] = 0.0  # steering        
-    action[1] = 0.05  # speed / gas
+    action[1] = 0.15  # speed / gas
     action[2] = 0.0  # brake
     for _ in range(1000):        
 
@@ -44,23 +44,27 @@ def run():
         dis_t = left + right
 
         if dis_t > 0:
-            action[0] = (right - left) / dis_t        
-        print(action)
+            action[0] = (right - left) / dis_t
+        
+        action[2] = (65 - dist['top']) / 650
 
         show_player(observation, dist)
     env.close() 
 
 def show_player(observation, dist):   
     x,y = player_coord
+    line_color = (255,0,0)
     image_cp = observation.copy()
     cv2.cvtColor(image_cp, cv2.COLOR_RGB2BGR, image_cp)
-    cv2.circle(image_cp, (x,y),1,(0,0,255))
+    
 
-    cv2.line(image_cp, (x,y), (x,y - dist['top']),(0,0,255))
-    cv2.line(image_cp, (x,y), (x - dist['left'], y),(0,0,255))
-    cv2.line(image_cp, (x,y), (x + dist['right'], y),(0,0,255))
-    cv2.line(image_cp, (x,y), (x - dist['top_left'], y - dist['top_left']),(0,0,255))
-    cv2.line(image_cp, (x,y), (x + dist['top_right'], y - dist['top_right']),(0,0,255))
+    cv2.line(image_cp, (x,y), (x,y - dist['top']),line_color)
+    cv2.line(image_cp, (x,y), (x - dist['left'], y),line_color)
+    cv2.line(image_cp, (x,y), (x + dist['right'], y),line_color)
+    cv2.line(image_cp, (x,y), (x - dist['top_left'], y - dist['top_left']),line_color)
+    cv2.line(image_cp, (x,y), (x + dist['top_right'], y - dist['top_right']),line_color)
+
+    cv2.circle(image_cp, (x,y),1,(0,0,255))
 
 
     
@@ -81,40 +85,38 @@ def get_dist(observation):
 
     color = observation[y][x]
     i = 0
-    while (y+i > 0) and (color[1] < 200):
+    while (y+i > 0) and (color[1] < 200):                
+        color = observation[y +i][x]
         i -= 1
-        color = observation[y+i][x]
     player_dist['top'] = abs(i)
 
     color = observation[y][x]
     i = 0
-    while (x+i > 0) and (color[1] < 200):
+    while (x+i > 0) and (color[1] < 200):                
+        color = observation[y][x +i]
         i -= 1
-        color = observation[y][x+i]
     player_dist['left'] = abs(i)
 
     color = observation[y][x]
     i = 0
-    while (x +i < stage[0]) and (color[1] < 200):
+    while (x +i < stage[0]) and (color[1] < 200):                
+        color = observation[y][x +i]
         i += 1
-        color = observation[y][x+i]
     player_dist['right'] = abs(i)
 
     color = observation[y][x]
     i = 0
     while (x+i > 0) and (y+i > 0) and (color[1] < 200):
-        i -= 1
         color = observation[y +i][x +i]
+        i -= 1       
     player_dist['top_left'] = abs(i)
 
     color = observation[y][x]
     i = 0
     while (x+ abs(i) < stage[0]) and (y+i > 0) and (color[1] < 200):
+        color = observation[y +i][x + abs(i)]
         i -= 1
-        color = observation[y +i][(x + abs(i)) if (x + abs(i)) < 96 else 95]
     player_dist['top_right'] = abs(i)
-
-    print (player_dist)
     return player_dist
 
 
